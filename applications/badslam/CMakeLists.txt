@@ -6,7 +6,7 @@ if (CMAKE_CUDA_COMPILER)
   find_package(SuiteSparse REQUIRED)
   find_package(DLib REQUIRED)
   find_package(Eigen3 REQUIRED)
-  find_package(g2o REQUIRED)
+  find_package(G2O REQUIRED)
   find_package(OpenGL REQUIRED)
   # Cross-platform threading. See:
   # https://cmake.org/cmake/help/latest/module/FindThreads.html
@@ -86,7 +86,7 @@ if (CMAKE_CUDA_COMPILER)
         #       guess.
         # NOTE: g2o also needs to be built with the same setting (it defaults
         #       to not use -march=native at the moment).
-        $<$<COMPILE_LANGUAGE:CXX>:-march=native>
+        # $<$<COMPILE_LANGUAGE:CXX>:-march=native>
 	)
     else()
     target_compile_options(badslam_baselib
@@ -150,12 +150,12 @@ if (CMAKE_CUDA_COMPILER)
   target_link_libraries(badslam_baselib
     PRIVATE
       opengv
-      g2o::core
-      g2o::types_slam3d
-      g2o::solver_csparse
-      g2o::csparse_extension
+      /usr/local/lib/libg2o_core.so
+      /usr/local/lib/libg2o_types_slam3d.so
+      /usr/local/lib/libg2o_solver_csparse.so
+      /usr/local/lib/libg2o_csparse_extension.so
+      /usr/local/lib/libg2o_stuff.so
       ${SuiteSparse_LIBRARIES}
-      g2o::stuff
       ${OpenCV_LIBS}
       ${DLib_LIBS}
       DBoW2

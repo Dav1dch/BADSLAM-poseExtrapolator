@@ -760,10 +760,37 @@ void BadSlam::PreprocessFrame(
   *final_depth_buffer = filtered_depth_buffer_A_.get();
 }
 
+void BadSlam::PredictFramePoseWithDepthImage(
+  SE3f* base_kf_tr_frame_initial_estimate,
+  int frame_index
+){
+  usize stored_frames = base_kf_tr_frame_.size();
+  if (frame_index < 1){
+    *base_kf_tr_frame_initial_estimate = base_kf_tr_frame_[0];
+  }
+  const float* parameters = dynamic_cast<const PinholeCamera4f*>(rgbd_video_->depth_camera().get())->parameters();
+  cout<< parameters[0]<<endl;
+  cout<< parameters[1]<<endl;
+  cout<< parameters[2]<<endl;
+  cout<< parameters[3]<<endl;
+
+  const shared_ptr<Image<u16>>& depth_image =
+      rgbd_video_->depth_frame_mutable(frame_index)->GetImage();
+
+  const shared_ptr<Image<u16>>& depth_Oldimage =
+      rgbd_video_->depth_frame_mutable(frame_index - 1)->GetImage();
+
+}
+
 void BadSlam::PredictFramePose(
     SE3f* base_kf_tr_frame_initial_estimate,
     SE3f* base_kf_tr_frame_initial_estimate_2) {
   usize stored_frames = base_kf_tr_frame_.size();
+
+  // const Image<Vec3u8>* rgb_image =
+  //     rgbd_video_->color_frame_mutable(frame_index)->GetImage().get();
+  // /*const shared_ptr<Image<u16>>& depth_image =*/
+  //     rgbd_video_->depth_frame_mutable(frame_index)->GetImage();
   
 //   constexpr float kMaxDepthToMaxTranslationFactor = 0.8f;  // TODO: make parameter?
 //   constexpr float kMaxAngleThreshold = 90.f * M_PI / 180.f;
@@ -836,6 +863,7 @@ void BadSlam::RunOdometry(int frame_index) {
   PredictFramePose(
       &base_kf_tr_frame_initial_estimate,
       &base_kf_tr_frame_initial_estimate_2);
+  PredictFramePoseWithDepthImage(&base_kf_tr_frame_initial_estimate,1);
   
   // Convert the raw u16 depths of the current frame to calibrated float
   // depths and transform the color image to depth intrinsics (and image size)

@@ -230,6 +230,13 @@ class BadSlam {
   void PredictFramePose(
       SE3f* base_kf_tr_frame_initial_estimate,
       SE3f* base_kf_tr_frame_initial_estimate_2);
+
+  // Using depth images, predicts the pose of the next frame based on the
+  // poses of the previous frames.
+  void PredictFramePoseWithDepthImage(
+    SE3f* base_kf_tr_frame_initial_estimate,
+    int frame_index
+  );
   
   // Estimates the RGB-D frame's pose from odometry based on the last keyframe.
   void RunOdometry(int frame_index);
@@ -257,6 +264,18 @@ class BadSlam {
   // is only used if BA is configured to run in parallel.
   void BAThreadMain(OpenGLContext* opengl_context);
   
+  // PoseExtrapolator variables
+
+  // Matrices that store the depth derivatives
+  MatrixXf du;
+  MatrixXf dv;
+  MatrixXf dt;
+
+  // Matrix which indicates wheter the depthj of a pixel is zero (null = 1) or not (null = 0) and border and noisy points 
+  MatrixXi null;
+
+  // Matrix which indicates wheter a point is in a border or has an inaccurate depth (border = 1, border = 0 otherwise)
+  MatrixXi border;
   
   // Odometry attributes.
   
