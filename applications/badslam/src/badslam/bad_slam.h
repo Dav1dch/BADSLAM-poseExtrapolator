@@ -37,6 +37,7 @@
 #include <libvis/sophus.h>
 #include <libvis/timing.h>
 #include <opencv2/core.hpp>
+#include <opencv2/core/eigen.hpp>
 
 #include "badslam/bad_slam_config.h"
 #include "badslam/kernels.h"
@@ -135,6 +136,18 @@ class BadSlam {
   
   // Lets the motion model forget about any motion it has stored.
   void ClearMotionModel(int current_frame_index);
+
+  void calculateDepthDerivative();
+
+  void findNullPoints();
+
+  void findBorder();
+
+  void findValidPoints();
+
+  void filterAndDownsample();
+
+  void calculateCoord();
   
   // Stops the Bundle Adjustment thread (in case it is running) and waits until
   // it has exited.
@@ -237,6 +250,7 @@ class BadSlam {
     SE3f* base_kf_tr_frame_initial_estimate,
     int frame_index
   );
+
   
   // Estimates the RGB-D frame's pose from odometry based on the last keyframe.
   void RunOdometry(int frame_index);
@@ -267,15 +281,35 @@ class BadSlam {
   // PoseExtrapolator variables
 
   // Matrices that store the depth derivatives
+  int rows, cols;
+  MatrixXf depth;
+  MatrixXf depth_old;
   MatrixXf du;
   MatrixXf dv;
   MatrixXf dt;
+  MatrixXf xx;
+  MatrixXf yy;
+  MatrixXf xx_old;
+  MatrixXf yy_old;
+  MatrixXf depth_wf;
+  MatrixXf depth_ft;
+  int gaussian_mask_size;
+
+  float fx, fy, cx, cy;
+  int num_valid_points;
+
+  /** Thresholds used to remove borders and noisy points */
+  float duv_threshold;      //!< Threshold to du*du + dv*dv
+  float dt_threshold;       //!< Threshold to dt
+  float dif_threshold;      //!< Threshold to [abs(final_dx-ini_dx) + abs(final_dy-ini_dy)]
+  float difuv_surroundings; //!< Threshold to the difference of (du,dv) at a pixel and the values of (du,dv) at its surroundings
+  float dift_surroundings;  //!< Threshold to the difference of dt at a pixel and the value of dt at its surroundings
 
   // Matrix which indicates wheter the depthj of a pixel is zero (null = 1) or not (null = 0) and border and noisy points 
-  MatrixXi null;
+  MatrixXi nullMatrix;
 
   // Matrix which indicates wheter a point is in a border or has an inaccurate depth (border = 1, border = 0 otherwise)
-  MatrixXi border;
+  MatrixXi borderMatrix;
   
   // Odometry attributes.
   
